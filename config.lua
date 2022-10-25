@@ -4,6 +4,21 @@ lvim.format_on_save = true
 lvim.colorscheme = "onedarker"
 lvim.lsp.automatic_servers_installation = true
 
+-- do not put delete till/replace into clipboard
+vim.opt.clipboard = nil
+
+-- keymappings
+
+-- Prevent moving lines accidentally
+lvim.keys.insert_mode["<A-j>"] = false
+lvim.keys.insert_mode["<A-k>"] = false
+lvim.keys.normal_mode["<A-j>"] = false
+lvim.keys.normal_mode["<A-k>"] = false
+lvim.keys.visual_block_mode["<A-j>"] = false
+lvim.keys.visual_block_mode["<A-k>"] = false
+lvim.keys.visual_block_mode["K"] = false
+lvim.keys.visual_block_mode["J"] = false
+
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = ","
 
@@ -25,22 +40,38 @@ lvim.builtin.telescope.defaults.mappings = {
 
 -- Use which-key to add extra bindings with the leader-key prefix
 -- lvim.builtin.which_key.mappings["P"] = { "<cmd>Telescope projects<CR>", "Projects" }
--- lvim.builtin.which_key.mappings["t"] = {
---   name = "+Trouble",
---   r = { "<cmd>Trouble lsp_references<cr>", "References" },
---   f = { "<cmd>Trouble lsp_definitions<cr>", "Definitions" },
---   d = { "<cmd>Trouble document_diagnostics<cr>", "Diagnostics" },
---   q = { "<cmd>Trouble quickfix<cr>", "QuickFix" },
---   l = { "<cmd>Trouble loclist<cr>", "LocationList" },
---   w = { "<cmd>Trouble workspace_diagnostics<cr>", "Wordspace Diagnostics" },
--- }
-
 lvim.builtin.alpha.active = true
 lvim.builtin.alpha.mode = "dashboard"
 lvim.builtin.notify.active = true
 lvim.builtin.terminal.active = true
 lvim.builtin.nvimtree.setup.view.side = "left"
+lvim.builtin.nvimtree.setup.view.adaptive_size = true
 lvim.builtin.nvimtree.setup.renderer.icons.show.git = true
+
+lvim.builtin.dap.active = false
+
+-- local dap = require "dap"
+-- dap.adapters.mix_task = {
+--   type = 'executable',
+--   command = '/Users/dvillarama/projects/podium/elixir-ls/rel/debugger.sh', -- debugger.bat for windows
+--   args = {}
+-- }
+
+-- dap.configurations.elixir = {
+--   {
+--     type = "mix_task",
+--     name = "mix test",
+--     task = 'test',
+--     taskArgs = { "--trace" },
+--     request = "launch",
+--     startApps = true, -- for Phoenix projects
+--     projectDir = "${workspaceFolder}",
+--     requireFiles = {
+--       "test/**/test_helper.exs",
+--       "test/**/*_test.exs"
+--     }
+--   },
+-- }
 
 -- if you don't want all the parsers change this to a table of the ones you want
 lvim.builtin.treesitter.ensure_installed = {
@@ -113,23 +144,7 @@ formatters.setup {
   },
 }
 
--- -- set additional linters
--- local linters = require "lvim.lsp.null-ls.linters"
--- linters.setup {
---   { command = "flake8", filetypes = { "python" } },
---   {
---     -- each linter accepts a list of options identical to https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md#Configuration
---     command = "shellcheck",
---     ---@usage arguments to pass to the formatter
---     -- these cannot contain whitespaces, options such as `--line-width 80` become either `{'--line-width', '80'}` or `{'--line-width=80'}`
---     extra_args = { "--severity", "warning" },
---   },
---   {
---     command = "codespell",
---     ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
---     filetypes = { "javascript", "python" },
---   },
--- }
+lvim.lsp.automatic_servers_installation = true
 
 lvim.plugins = {
   -- { "elixir-editors/vim-elixir" },
@@ -139,12 +154,19 @@ lvim.plugins = {
     cmd = { "TestNearest", "TestFile", "TestSuite", "TestLast", "TestVisit" },
     config = function()
       vim.cmd "let test#strategy='vimux'"
-      vim.cmd "let test#elixir#exunit#executable = 'MIX_ENV=test mix test'"
+      vim.cmd "let test#elixir#exunit#executable = 'MIX_ENV=test mix test --trace'"
     end
   },
   { "tpope/vim-surround", keys = { "c", "d", "y" } },
+  -- { "folke/trouble.nvim", cmd = "TroubleToggle",
+  --   config = function()
+  --     require("trouble").setup()
+  --   end
+  -- }
   -- { "f-person/git-blame.nvim" },
 }
+
+-- lvim.lsp_d
 
 lvim.builtin.which_key.mappings["t"] = {
   name = "+Test",
@@ -154,6 +176,16 @@ lvim.builtin.which_key.mappings["t"] = {
   l = { "<cmd>TestLast<cr>", "Last" },
   g = { "<cmd>TestVisit<cr>", "Visit" },
 }
+
+-- lvim.builtin.which_key.mappings["x"] = {
+--   name = "+Trouble",
+--   r = { "<cmd>Trouble lsp_references<cr>", "References" },
+--   f = { "<cmd>Trouble lsp_definitions<cr>", "Definitions" },
+--   d = { "<cmd>Trouble document_diagnostics<cr>", "Diagnostics" },
+--   q = { "<cmd>Trouble quickfix<cr>", "QuickFix" },
+--   l = { "<cmd>Trouble loclist<cr>", "LocationList" },
+--   w = { "<cmd>Trouble workspace_diagnostics<cr>", "Wordspace Diagnostics" },
+-- }
 
 -- Autocommands (https://neovim.io/doc/user/autocmd.html)
 -- vim.api.nvim_create_autocmd("BufEnter", {
@@ -176,9 +208,19 @@ end
 
 lvim.builtin.which_key.mappings["a"] = { "<cmd>lua GrepInputStringImmediately()<CR>", "Grep Text under cursor" }
 
+lvim.builtin.which_key.mappings["x"] = { "<cmd>lua vim.diagnostic.open_float()<CR>",
+  "Show diagnostics in window" }
+
+
 -- Old nerd tree
 lvim.keys.normal_mode["|"] = ":NvimTreeFindFile<CR>"
 lvim.keys.normal_mode["\\"] = ":NvimTreeToggle<CR>"
+
+-- require("nvim-tree").setup({
+--   view = {
+--     adaptive_size = true,
+--   },
+-- })
 
 -- remove line numbers
 lvim.keys.normal_mode["<F2>"] = ":set invnumber<CR>"
